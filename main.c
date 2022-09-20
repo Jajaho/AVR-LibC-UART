@@ -68,15 +68,29 @@ void uart_echo(void) {
 
 
 uint8_t uart_getc(void) {
-    while (!BITSET(UCSR0A,RXC0))
-        ;
+<<<<<<< Updated upstream
+    if (!BITSET(UCSR0A, UDRE0)) {
+        blink_thrice();
+        return;
+=======
+    while (!(UCSR0A & (1 << RXC0))) {
+        blink_twice();
+>>>>>>> Stashed changes
+    }
     return UDR0;
 }
 
+<<<<<<< Updated upstream
+void uart_gets(char* buffer) {
+    uint8_t nextChar = uart_getc();
+    while (nextChar != '\n')
+=======
 void uart_gets(char *buffer, uint8_t size) {
-    uint8_t nextChar, stringLen;
+    uint8_t nextChar;
+    uint8_t stringLen = 0;
     nextChar = uart_getc();
     while (nextChar != '\n' && stringLen < size - 1)        
+>>>>>>> Stashed changes
     {
         *buffer++ = nextChar;
         stringLen++;
