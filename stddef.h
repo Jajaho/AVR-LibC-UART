@@ -1,7 +1,6 @@
 #ifndef STDDEF_H_
 #define STDDEF_H_
 
-
 #define BAUD 9600
 
 // Pins //

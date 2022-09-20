@@ -7,7 +7,6 @@
 static char rxBuffer[32] = "";
 static uint8_t nextFree = 0;
 
-
 int main(void) {
     DDRB = (1 << PB5);
     uart_init();
@@ -21,12 +20,9 @@ int main(void) {
             //*rxBuffer = "";
             nextFree = 0;
         }
+        _delay_us(100);
     }
     
-}
-
-ISR(USART_RX_vect) {
-    rxBuffer[nextFree++] = uart_getc();
 }
 
 void uart_init(void) {
@@ -49,6 +45,20 @@ void uart_init(void) {
     CLRBIT(UCSR0B, UCSZ02);
     UCSR0C |= (1 << UCSZ01) | (1 << UCSZ01);
 
+}
+
+void parse_cmd(char *input) {
+    switch (input[0])
+    {
+    case '*':
+        
+        break;
+    case ':':
+
+        break;
+    default:
+        break;
+    }
 }
 
 void uart_ping(void) {
@@ -138,4 +148,8 @@ void blink_thrice(void) {
     _delay_ms(200);
     LED_OFF();
     _delay_ms(500);
+}
+
+ISR(USART_RX_vect) {
+    rxBuffer[nextFree++] = uart_getc();
 }
