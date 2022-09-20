@@ -10,13 +10,11 @@ int main(void) {
 
     uart_init();
 
-    char string[9];
+    char string[9] = "";
 
     while (1)
     {
-        blink();
         uart_gets(&string, 9);
-        blink();
         uart_puts(&string);
         //blink();
     }
@@ -69,7 +67,6 @@ void uart_echo(void) {
 
 uint8_t uart_getc(void) {
     while (!(UCSR0A & (1 << RXC0))) {
-        blink_twice();
     }
     return UDR0;
 }
@@ -89,7 +86,6 @@ void uart_gets(char *buffer, uint8_t size) {
 
 void uart_putc(unsigned char c) {
     while (!BITSET(UCSR0A, UDRE0)) {    // uart not ready
-        blink_twice();
     }
     UDR0 = c;
 }
