@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.9)
-project(avr_uart_test)
+project(avr_gcc_uart)
 
 set(MCU "atmega328p")
 set(PROGRAMMER "avrisp2")

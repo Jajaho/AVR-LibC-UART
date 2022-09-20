@@ -2,23 +2,31 @@
 #include <avr/io.h>
 #include <util/setbaud.h>
 #include <util/delay.h>
+#include <avr/interrupt.h>
 
+static char rxBuffer[32] = "";
+static uint8_t nextFree = 0;
 
 
 int main(void) {
     DDRB = (1 << PB5);
-
     uart_init();
-
-    char string[9] = "";
+    sei();
 
     while (1)
     {
-        uart_gets(&string, 9);
-        uart_puts(&string);
         //blink();
+        if (nextFree == 3) {
+            uart_puts(&rxBuffer);
+            //*rxBuffer = "";
+            nextFree = 0;
+        }
     }
     
+}
+
+ISR(USART_RX_vect) {
+    rxBuffer[nextFree++] = uart_getc();
 }
 
 void uart_init(void) {
@@ -33,8 +41,8 @@ void uart_init(void) {
         UCSR0A &= ~(1 << U2X0);
     #endif
     
-    // Enable Receiver and Transmitter
-    UCSR0B |= (1 << RXEN0) | (1 << TXEN0);
+    // Enable Receiver, Transmitter and Interrupt on RX complete
+    UCSR0B |= (1 << RXEN0) | (1 << TXEN0) | (1 << RXCIE0);
     // Asynchronous mode - default
 
     // Set character size to 8-bit
@@ -66,8 +74,8 @@ void uart_echo(void) {
 
 
 uint8_t uart_getc(void) {
-    while (!(UCSR0A & (1 << RXC0))) {
-    }
+    while (!(UCSR0A & (1 << RXC0))) 
+        ;
     return UDR0;
 }
 
