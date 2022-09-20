@@ -15,10 +15,10 @@ int main(void) {
     while (1)
     {
         blink();
-        uart_gets(string);
+        uart_gets(&string, 9);
         blink();
-        uart_puts(string);
-        blink();
+        uart_puts(&string);
+        //blink();
     }
     
 }
@@ -66,34 +66,35 @@ void uart_echo(void) {
     UDR0 = UDR0;    // write data from the receive buffer to the transmit buffer (same I/O address)
 }
 
+
 uint8_t uart_getc(void) {
-    if (!BITSET(UCSR0A, UDRE0)) {
-        blink_thrice();
-        return;
-    }
+    while (!BITSET(UCSR0A,RXC0))
+        ;
     return UDR0;
 }
 
-void uart_gets(char* buffer) {
-    uint8_t nextChar = uart_getc();
-    while (nextChar != '\n')
+void uart_gets(char *buffer, uint8_t size) {
+    uint8_t nextChar, stringLen;
+    nextChar = uart_getc();
+    while (nextChar != '\n' && stringLen < size - 1)        
     {
         *buffer++ = nextChar;
+        stringLen++;
         nextChar = uart_getc();
     }
-    *buffer = '\0';     // add c string terminator
+    *buffer = '\0';
 }
 
 void uart_putc(unsigned char c) {
-    while (!BITSET(UCSR0A, UDRE0)) {
+    while (!BITSET(UCSR0A, UDRE0)) {    // uart not ready
         blink_twice();
     }
     UDR0 = c;
 }
 
 void uart_puts(char *s) {
-    while(*s) {     // while s* != '\0'
-        uart_putc(*s++);
+    while(*s != '\0') {
+        uart_putc(*s++);    // ++ binds closer then *, so address is iterated - not the value
     }
 }
 
