@@ -26,7 +26,7 @@ set(CMAKE_CXX_FLAGS ${CXXFLAGS})
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD  11)
 
-set(SOURCES main.c)
+set(SOURCES main.c usart.c)
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "${PROJECT_NAME}.elf")
