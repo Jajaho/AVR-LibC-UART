@@ -3,6 +3,9 @@
 
 #define BAUD 9600
 
+
+#define MIN_DEL_COUNT 3
+#define MAX_DEL_COUNT 4
 // Pins //
 
 #define BOARD_LED PB5
