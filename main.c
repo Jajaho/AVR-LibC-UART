@@ -6,6 +6,7 @@
 #include <string.h>
 #include "usart.h"
 #include "fifo.h"
+#include "blink.h"
 
 //static char rxBuffer[32] = "";
 //static uint8_t nextFree = 0;
@@ -15,14 +16,12 @@ fifo_data_t tmp_a[32];  // fifo memory
 
 
 void parse_cmd(char *input) {    
-    // Pointer to array, will be overriden by strsep() with pointer to first char after a found delimeter, or NULL ptr. if the end of the string was reached
-    char *start = input;          
-    char **header[MAX_DEL_COUNT];    // Array of pointers to the first char after a found delimeter
-    //uint8_t delCount = 0;           // Number of delimeters found in the input string
+    char *start = input;            // Pointer to array, will be overriden by strsep() with pointer to first char after a found delimeter, or NULL ptr. if the end of the string was reached
+    char **header[MAX_DEL_COUNT];   // Array of pointers to the first char after a found delimeter
     uint8_t newFirstIndex = 0;      // First index that the buffer will have at the end of this method
 
     for (uint8_t i = 0; strsep(&start, ":") && i < MAX_DEL_COUNT; i++) {
-        header[i] = start;
+        header[i] = start;  // DONT FIX, only works this way
         //delCount++;
     }
     /*
@@ -53,42 +52,6 @@ void flush_rxBuffer(void) {
     nextFree = 0;
 }
 */
-
-void blink(void) {
-    _delay_ms(500);
-    LED_ON();
-    _delay_ms(200);
-    LED_OFF();
-    _delay_ms(500);
-}
-
-void blink_twice(void) {
-    _delay_ms(500);
-    LED_ON();
-    _delay_ms(200);
-    LED_OFF();
-    _delay_ms(200);
-    LED_ON();
-    _delay_ms(200);
-    LED_OFF();
-    _delay_ms(500);
-}
-
-void blink_thrice(void) {
-    _delay_ms(500);
-    LED_ON();
-    _delay_ms(200);
-    LED_OFF();
-    _delay_ms(200);
-    LED_ON();
-    _delay_ms(200);
-    LED_OFF();
-    _delay_ms(200);
-    LED_ON();
-    _delay_ms(200);
-    LED_OFF();
-    _delay_ms(500);
-}
 
 int main(void) {
     DDRB = (1 << PB5);

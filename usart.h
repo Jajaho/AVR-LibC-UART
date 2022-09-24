@@ -1,5 +1,5 @@
-#ifndef _USART
-#define _USART
+#ifndef USART
+#define USART
 
 void uart_init(void);
 void uart_echo(void);

@@ -30,7 +30,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD  11)
 
 # --------- Sources --------- #
-set(SOURCES main.c usart.c fifo.c)
+set(SOURCES main.c usart.c fifo.c blink.c)
 
 # --------- Targets --------- #
 add_executable(${PROJECT_NAME} ${SOURCES})
