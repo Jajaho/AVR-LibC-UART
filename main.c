@@ -15,12 +15,15 @@ fifo_data_t tmp_a[32];  // fifo memory
 
 
 void parse_cmd(char *input) {    
-    char **startToken = &input;     // Pointer to array, will be overriden by strsep() with pointer to first char after a found delimeter, or NULL ptr. if the end of the string was reached
-    char **header[MAX_DEL_COUNT];   // Array of pointers to the first char after a found delimeter
+    // Pointer to array, will be overriden by strsep() with pointer to first char after a found delimeter, or NULL ptr. if the end of the string was reached
+    char *start = input;          
+    char **header[MAX_DEL_COUNT];    // Array of pointers to the first char after a found delimeter
+    //uint8_t delCount = 0;           // Number of delimeters found in the input string
     uint8_t newFirstIndex = 0;      // First index that the buffer will have at the end of this method
 
-    for (uint8_t i = 0; strsep(startToken, ":") && i < MAX_DEL_COUNT; i++) {
-        header[i] = startToken;
+    for (uint8_t i = 0; strsep(&start, ":") && i < MAX_DEL_COUNT; i++) {
+        header[i] = start;
+        //delCount++;
     }
     /*
     for (uint8_t i = 0; i < delCount; i++) {
@@ -30,11 +33,11 @@ void parse_cmd(char *input) {
     
     // match mnemonic keywords, strcasecmp returns 0 on match
     if (header[0]) {
-        if (strcasecmp(header[0], "meas") == 0 || strcasecmp(header[0], "measure") == 0) {
+        if (!strcasecmp(header[0], "meas") || !strcasecmp(header[0], "measure")) {
             if (header[1]) { 
-                if (strcasecmp(header[1], "ch1") == 0 || strcasecmp(header[1], "channel1") == 0) {
+                if (!strcasecmp(header[1], "ch1") || !strcasecmp(header[1], "channel1")) {
                     if (header[2]) { 
-                        if (strcasecmp(header[2], "esr") == 0) {
+                        if (!strcasecmp(header[2], "esr")) {
                             uart_puts("Measuring ESR on CH1.");
                             // advance ringbuffer to next delimeter
                         }
