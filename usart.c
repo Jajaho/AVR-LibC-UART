@@ -25,6 +25,14 @@ void uart_init(void) {
 
 }
 
+void uart_ping(void) {
+    // Wait for the data register to be empty
+    while (!(UCSR0A & (1<<UDRE0))) {
+        blink_twice();
+    }
+    UDR0 = 'x';
+}
+
 void uart_echo(void) {
     // Check if data is available and the uart is ready 
     if (!BITSET(UCSR0A, RXC0)) {

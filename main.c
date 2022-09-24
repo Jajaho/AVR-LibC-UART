@@ -10,19 +10,17 @@
 //static char rxBuffer[32] = "";
 //static uint8_t nextFree = 0;
 
-fifo_t fifo;    // receive ringbuffer
+fifo_t fifo;            // fifo struct
+fifo_data_t tmp_a[32];  // fifo memory
 
-// strcasestr()
-// char * strsep(char **stringp, const char *delim);
+
 void parse_cmd(char *input) {    
-    char *start = input;  
-    // Pointer to array, will be overriden by strsep() with pointer to first char after a found delimeter, or NULL ptr. if the end of the string was reached
-    char **header[MAX_DEL_COUNT];    // Array of pointers to the first char after a found delimeter
-    //uint8_t delCount = 0;           // Number of delimeters found in the input string
+    char **startToken = &input;     // Pointer to array, will be overriden by strsep() with pointer to first char after a found delimeter, or NULL ptr. if the end of the string was reached
+    char **header[MAX_DEL_COUNT];   // Array of pointers to the first char after a found delimeter
     uint8_t newFirstIndex = 0;      // First index that the buffer will have at the end of this method
-    for (uint8_t i = 0; strsep(&start, ":") && i < MAX_DEL_COUNT; i++) {
-        header[i] = start;
-        //delCount++;
+
+    for (uint8_t i = 0; strsep(startToken, ":") && i < MAX_DEL_COUNT; i++) {
+        header[i] = startToken;
     }
     /*
     for (uint8_t i = 0; i < delCount; i++) {
@@ -32,11 +30,11 @@ void parse_cmd(char *input) {
     
     // match mnemonic keywords, strcasecmp returns 0 on match
     if (header[0]) {
-        if (!strcasecmp(header[0], "meas") || !strcasecmp(header[0], "measure")) {
+        if (strcasecmp(header[0], "meas") == 0 || strcasecmp(header[0], "measure") == 0) {
             if (header[1]) { 
-                if (!strcasecmp(header[1], "ch1") || !strcasecmp(header[1], "channel1")) {
+                if (strcasecmp(header[1], "ch1") == 0 || strcasecmp(header[1], "channel1") == 0) {
                     if (header[2]) { 
-                        if (!strcasecmp(header[2], "esr")) {
+                        if (strcasecmp(header[2], "esr") == 0) {
                             uart_puts("Measuring ESR on CH1.");
                             // advance ringbuffer to next delimeter
                         }
@@ -45,7 +43,6 @@ void parse_cmd(char *input) {
             }
         }
     }
-    //uart_puts(rxBuffer);
 }
 /*
 void flush_rxBuffer(void) {
@@ -53,13 +50,6 @@ void flush_rxBuffer(void) {
     nextFree = 0;
 }
 */
-void uart_ping(void) {
-    // Wait for the data register to be empty
-    while (!(UCSR0A & (1<<UDRE0))) {
-        blink_twice();
-    }
-    UDR0 = 'x';
-}
 
 void blink(void) {
     _delay_ms(500);
@@ -99,7 +89,6 @@ void blink_thrice(void) {
 
 int main(void) {
     DDRB = (1 << PB5);
-    fifo_data_t tmp_a[10];
     fifo_init(&fifo, tmp_a, sizeof(tmp_a) / sizeof (fifo_data_t));
     uart_init();
     sei();
@@ -109,12 +98,11 @@ int main(void) {
         blink();
         // ----------------------------------------------------------------------------
         // performance block access to FIFO
-        // ALWAYS do it this way!
-        // read 5 bytes
-        uint16_t freespace, block_size, wrap_size;
+        // Read entire fifo
+        fifo_size_t block_size, wrap_size;
         block_size = fifo_get_level(&fifo);
         wrap_size = fifo_get_read_wrap(&fifo);
-        fifo_data_t tmp_b[block_size];
+        fifo_data_t tmp_b[block_size + 1];
     
         if (fifo_get_level(&fifo) >= block_size) {
             if (block_size > wrap_size) {
@@ -127,11 +115,12 @@ int main(void) {
             memcpy(tmp_b, (uint8_t*)fifo.read_p, block_size * sizeof(fifo_data_t));
             fifo_read_bursted(&fifo, block_size);
         }
+        tmp_b[block_size] = '\0';
         //level = fifo_get_level(&fifo);
         // ----------------------------------------------------------------------------
-        char *start = (char*) tmp_b;
-        uart_puts((char*) tmp_b);
-        parse_cmd((char*) tmp_b);
+        
+        uart_puts(tmp_b);
+        parse_cmd(tmp_b);   // puts \0 in the string!
 
         _delay_us(100);
     }

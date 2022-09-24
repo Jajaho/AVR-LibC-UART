@@ -62,8 +62,8 @@
 */
 /*@{*/
 
-typedef uint8_t  fifo_data_t;       /**< FIFO data element type */
-typedef uint16_t fifo_size_t;       /**< FIFO size type */
+typedef char  fifo_data_t;       /**< FIFO data element type */
+typedef uint8_t fifo_size_t;       /**< FIFO size type */
 
 /*@}*/
 
