@@ -6,7 +6,9 @@
 
 #define MIN_DEL_COUNT 3
 #define MAX_DEL_COUNT 4
-// Pins //
+// Pins & Ports //
+#define MUX_PORT DDRD;
+#define FIRST_ADDR_PIN PD2;
 
 #define BOARD_LED PB5
 
