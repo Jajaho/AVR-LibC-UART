@@ -8,9 +8,6 @@
 #include "fifo.h"
 #include "blink.h"
 
-//static char rxBuffer[32] = "";
-//static uint8_t nextFree = 0;
-
 fifo_t fifo;            // fifo struct
 fifo_data_t tmp_a[32];  // fifo memory
 
@@ -22,13 +19,7 @@ void parse_cmd(char *input) {
 
     for (uint8_t i = 0; strsep(&start, ":") && i < MAX_DEL_COUNT; i++) {
         header[i] = start;  // DONT FIX, only works this way
-        //delCount++;
     }
-    /*
-    for (uint8_t i = 0; i < delCount; i++) {
-        uart_puts(header[i]);
-    }
-    */
     
     // match mnemonic keywords, strcasecmp returns 0 on match
     if (header[0]) {
@@ -46,15 +37,14 @@ void parse_cmd(char *input) {
         }
     }
 }
-/*
-void flush_rxBuffer(void) {
-    memset(&rxBuffer,0,strlen(&rxBuffer));
-    nextFree = 0;
-}
-*/
 
 int main(void) {
-    DDRB = (1 << PB5);
+    DDRB = (1 << PB5);      // LED
+    DDRD = (0b1111 << PD2); // MUX A0, A1, A2, A3
+    DDRD = (1 << PD6);      // MUX !EN
+    DDRC = (1 << PC0);      // MUX !WR
+    //PORTD = (1 << PD6);
+    PORTC = (1 << PC0);
     fifo_init(&fifo, tmp_a, sizeof(tmp_a) / sizeof (fifo_data_t));
     uart_init();
     sei();
@@ -62,6 +52,7 @@ int main(void) {
     while (1)
     {
         blink();
+
         // ----------------------------------------------------------------------------
         // performance block access to FIFO
         // Read entire fifo
@@ -82,7 +73,6 @@ int main(void) {
             fifo_read_bursted(&fifo, block_size);
         }
         tmp_b[block_size] = '\0';
-        //level = fifo_get_level(&fifo);
         // ----------------------------------------------------------------------------
         
         uart_puts(tmp_b);
@@ -91,6 +81,16 @@ int main(void) {
         _delay_us(100);
     }
     
+}
+
+void mux_set_channel(uint8_t chn) {
+    PORTD = (1 << PD6);     // !EN
+    PORTD = (chn & 1111) << PD2;    // Address
+    PORTC = (0 << PC0);     // !WR
+    // Enable setup time - 5 ns ~ 20 MHz, guaranted through uC clock 
+    PORTC = (0 << PC0);     // !WR
+    // Enable hold time - 2 ns
+    PORTD = (0 << PD6);     // !EN
 }
 
 ISR(USART_RX_vect) {
