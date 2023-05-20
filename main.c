@@ -11,6 +11,17 @@
 fifo_t fifo;            // fifo struct
 fifo_data_t tmp_a[32];  // fifo memory
 
+void mux_set_channel(uint8_t chn) {
+    PORTD = (1 << PD6);             // !EN
+    PORTD = (chn & 1111) << PD2;    // Address
+    PORTC = (0 << PC0);             // !WR
+    _delay_ms(1);
+    // Enable setup time - 5 ns guaranted through uC clock  18 MHz ~ 50 ns, 
+    PORTC = (1 << PC0);             // !WR
+    // Enable hold time - 2 ns
+    PORTD = (0 << PD6);             // !EN
+    PORTD = (0000 << PD2);    
+}
 
 void parse_cmd(char *input) {    
     char *start = input;            // Pointer to array, will be overriden by strsep() with pointer to first char after a found delimeter, or NULL ptr. if the end of the string was reached
@@ -29,7 +40,7 @@ void parse_cmd(char *input) {
                     if (header[2]) { 
                         if (!strcasecmp(header[2], "esr")) {
                             uart_puts("Measuring ESR on CH1.");
-                            // advance ringbuffer to next delimeter
+                            mux_set_channel(15);
                         }
                     }
                 }
@@ -41,10 +52,11 @@ void parse_cmd(char *input) {
 int main(void) {
     DDRB = (1 << PB5);      // LED
     DDRD = (0b1111 << PD2); // MUX A0, A1, A2, A3
-    DDRD = (1 << PD6);      // MUX !EN
-    DDRC = (1 << PC0);      // MUX !WR
-    //PORTD = (1 << PD6);
+    DDRD = (1 << PD6);      // MUX !EN - Not Enable
+    DDRC = (1 << PC0);      // MUX !WR- Not Write Pin
+
     PORTC = (1 << PC0);
+
     fifo_init(&fifo, tmp_a, sizeof(tmp_a) / sizeof (fifo_data_t));
     uart_init();
     sei();
@@ -81,16 +93,6 @@ int main(void) {
         _delay_us(100);
     }
     
-}
-
-void mux_set_channel(uint8_t chn) {
-    PORTD = (1 << PD6);     // !EN
-    PORTD = (chn & 1111) << PD2;    // Address
-    PORTC = (0 << PC0);     // !WR
-    // Enable setup time - 5 ns ~ 20 MHz, guaranted through uC clock 
-    PORTC = (0 << PC0);     // !WR
-    // Enable hold time - 2 ns
-    PORTD = (0 << PD6);     // !EN
 }
 
 ISR(USART_RX_vect) {
